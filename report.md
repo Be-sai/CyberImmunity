@@ -56,6 +56,7 @@
 
 Базовая архитектура
 ![Базовая архитектура](https://github.com/user-attachments/assets/3fa84ea8-381e-41d4-9b89-74599eb6d76f)
+![image](https://github.com/user-attachments/assets/51274e33-904c-47e0-8f5a-0b0a4f818af9)
 
 |Компонент|Назначение|
 |:--|:--|
