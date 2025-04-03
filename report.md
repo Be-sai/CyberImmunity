@@ -69,7 +69,8 @@
 |7. Самодиагностика|Контролирует состояние системы и генерирует отчеты.|
 
 Сценарий работы
-![image](https://github.com/user-attachments/assets/a04d0bf8-5262-453e-b135-813285faabb7)
+![изображение](https://github.com/user-attachments/assets/f51e40a0-6201-46df-b743-2403b2546efd)
+
 
 ### Алгоритм работы решения
 
