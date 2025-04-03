@@ -115,3 +115,22 @@
 |НС-11|Атака на резервирование: Злоумышленник отключает систему резервирования, что приводит к отказу системы при сбое в электроснабжении. Нарушается ЦБ 5.|
 |НС-12|Атака на регулировку освещения: Злоумышленник изменяет параметры регулировки освещения, что приводит к некорректной работе системы и нарушению ЦБ 1, 2, 3.|
 
+
+HC-1 ![изображение](https://github.com/user-attachments/assets/b7b68e72-33b8-46ca-8aba-6075bb9c5314)
+
+HC-2 ![изображение](https://github.com/user-attachments/assets/12150cf2-7830-4816-8fe1-7161b1f1f5b9)
+HC-3 ![изображение](https://github.com/user-attachments/assets/178cef15-e357-4004-b951-3369e354c67f)
+HC-4 ![изображение](https://github.com/user-attachments/assets/b3fe0881-d366-4099-90c3-b26f76883e45)
+HC-5 ![изображение](https://github.com/user-attachments/assets/e142802e-b4c6-429e-be3f-fd6749cea699)
+HC-6 ![изображение](https://github.com/user-attachments/assets/200eb520-9e36-4d87-8afa-33f67a130f40)
+HC-7 ![изображение](https://github.com/user-attachments/assets/3ea1d2af-8859-4feb-82d9-737e35a2bff7)
+HC-8 ![изображение](https://github.com/user-attachments/assets/10295024-b3fd-4078-a3ef-b48c36a3e7c1)
+HC-9 ![изображение](https://github.com/user-attachments/assets/038c2790-5071-4e54-a14d-b2d6cded8356)
+HC-10 ![изображение](https://github.com/user-attachments/assets/efc5d5d6-75fd-4f96-bf1c-03dd0bdf95e5)
+HC-11 ![изображение](https://github.com/user-attachments/assets/13cb1c30-78a5-4b73-9a2f-6dc93535c854)
+HC-12 ![изображение](https://github.com/user-attachments/assets/53705fd0-19ae-446c-a696-5d62d938de3f)
+
+
+
+
+
