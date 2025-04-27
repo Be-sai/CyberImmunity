@@ -55,8 +55,8 @@
 ### Компоненты
 
 Базовая архитектура
-![Базовая архитектура](https://github.com/user-attachments/assets/3fa84ea8-381e-41d4-9b89-74599eb6d76f)
-![image](https://github.com/user-attachments/assets/51274e33-904c-47e0-8f5a-0b0a4f818af9)
+![image](https://github.com/user-attachments/assets/2fd73dc9-e6e9-4dd0-aece-a7bb146ecdf8)
+
 
 |Компонент|Назначение|
 |:--|:--|
@@ -69,7 +69,8 @@
 |7. Самодиагностика|Контролирует состояние системы и генерирует отчеты.|
 
 Сценарий работы
-![изображение](https://github.com/user-attachments/assets/f51e40a0-6201-46df-b743-2403b2546efd)
+![image](https://github.com/user-attachments/assets/bb982099-e0be-4f8a-b2dd-1656c7d7963c)
+
 
 
 ### Алгоритм работы решения
