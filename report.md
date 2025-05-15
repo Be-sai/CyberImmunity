@@ -55,7 +55,8 @@
 ### Компоненты
 
 Базовая архитектура
-![image](https://github.com/user-attachments/assets/3fec5585-9b3f-4f3e-ac66-c234aaaff875)
+![image](https://github.com/user-attachments/assets/a5b41193-3336-4fff-a53d-0a397f596417)
+
 
 
 
@@ -70,7 +71,9 @@
 |7. Самодиагностика|Контролирует состояние системы и генерирует отчеты.|
 
 Сценарий работы
-![image](https://github.com/user-attachments/assets/9dd4e573-cdf6-459f-ab1c-1023e3212ccf)
+![image_2025-05-14_23-48-33](https://github.com/user-attachments/assets/b125d4f8-2249-451e-8d47-072f77c51011)
+![image_2025-05-15_00-05-10](https://github.com/user-attachments/assets/2fd9f25d-76a9-4394-a1ba-f377fd592e03)
+
 
 
 
@@ -119,18 +122,30 @@
 |НС-12|Атака на регулировку освещения: Злоумышленник изменяет параметры регулировки освещения, что приводит к некорректной работе системы и нарушению ЦБ 1, 2, 3.|
 
 
-HC-1 ![image](https://github.com/user-attachments/assets/74eb9811-2527-4645-af9f-e1e7f4389cbc)
-HC-2 ![image](https://github.com/user-attachments/assets/d9f09711-63c3-4ef7-83eb-76914cdc1612)
-HC-3 ![image](https://github.com/user-attachments/assets/8af2aa47-9f66-4ba7-9c45-788a8f98c5e7)
-HC-4 ![image](https://github.com/user-attachments/assets/4ea50fdb-8f8a-4f64-b5d3-cae39049deca)
-HC-5 ![image](https://github.com/user-attachments/assets/51388335-8a41-4b50-a2e8-3048a1ce20b6)
-HC-6 ![image](https://github.com/user-attachments/assets/030075b5-a30a-450c-82dc-05f076f2da43)
-HC-7 ![image](https://github.com/user-attachments/assets/558eda4f-1d3b-49bd-ae0f-660fa58d8615)
-HC-8 ![image](https://github.com/user-attachments/assets/71b1f519-6561-48b5-8c0f-6c556f573495)
-HC-9 ![image](https://github.com/user-attachments/assets/b9a88fc7-9761-4227-b430-98a9636bec52)
-HC-10 ![image](https://github.com/user-attachments/assets/657d0dd4-05e5-4f4b-ae0a-754e8256d6af) 
-HC-11 ![image](https://github.com/user-attachments/assets/bea56465-355f-4b97-b8a5-9ac5bd9c3302)
-HC-12 ![image](https://github.com/user-attachments/assets/1b05ee15-88ce-4a1e-90c1-f29f89b78c9d)
+HC-1 ![image_2025-05-15_09-13-07](https://github.com/user-attachments/assets/82e0e21d-842a-4e8f-88e1-eab831dc23cb)
+
+HC-2 ![image_2025-05-15_09-15-18](https://github.com/user-attachments/assets/baba6d5b-3362-49b2-8be1-6c194e494ae3)
+
+HC-3 ![image_2025-05-15_09-16-29](https://github.com/user-attachments/assets/72229cf3-03d0-45b7-9627-0f8a72ee8e3f)
+
+HC-4 ![image_2025-05-15_09-19-30](https://github.com/user-attachments/assets/6f6ca397-a96c-4820-a567-ecc412ee4eac)
+
+HC-5 ![image_2025-05-15_09-24-06](https://github.com/user-attachments/assets/1a34c520-2931-4615-bb97-5a742c3e5392)
+
+HC-6 ![image_2025-05-15_09-27-57](https://github.com/user-attachments/assets/37c8769a-73f2-4e27-bb4b-13c0d0ddcc6a)
+
+HC-7 ![image_2025-05-15_09-29-49](https://github.com/user-attachments/assets/d8c56de8-7ccd-4b51-a16c-7382880fb5ee)
+
+HC-8 !![image_2025-05-15_09-32-28](https://github.com/user-attachments/assets/dbaa67f1-ff73-47b3-8c00-fcdc43b2acff)
+
+HC-9 ![image_2025-05-15_09-35-50](https://github.com/user-attachments/assets/bd4f93eb-6a17-4715-9e4f-564dcc4cc05e)
+
+HC-10 ![image_2025-05-15_09-35-50](https://github.com/user-attachments/assets/e7152312-4182-4377-b69a-fbc7b8efbf20)
+
+HC-11 ![image_2025-05-15_09-52-08](https://github.com/user-attachments/assets/7e1eaf09-8590-4dee-a68b-41d2a9dc47fe)
+
+HC-12 ![image_2025-05-15_09-45-00](https://github.com/user-attachments/assets/1dcda21e-3827-4525-af55-30db2495d801)
+
 
  
 
