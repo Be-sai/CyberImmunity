@@ -5,7 +5,7 @@ from datetime import datetime
 from werkzeug.exceptions import HTTPException
 
 HOST = '0.0.0.0'
-PORT = 8000
+PORT = 8001
 DB_FILE = 'sqlite:///gateway.db'
 
 app = Flask(__name__)
@@ -34,6 +34,17 @@ class Notification(db.Model):
 @app.before_first_request
 def create_tables():
     db.create_all()
+
+@app.route('/notifications', methods=['GET'])
+def list_notifications():
+    notifications = Notification.query.order_by(Notification.timestamp.desc()).all()
+    return jsonify([
+        {
+            'message': n.message,
+            'priority': n.priority,
+            'timestamp': n.timestamp.isoformat()
+        } for n in notifications
+    ])
 
 @app.route('/command', methods=['POST'])
 def handle_command():

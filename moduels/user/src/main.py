@@ -4,8 +4,8 @@ import threading
 from werkzeug.exceptions import HTTPException
 
 HOST = '0.0.0.0'
-PORT = 5000
-SERVER_URL = 'http://smart_home_server:8000'
+PORT = 8000
+SERVER_URL = 'http://smart_home:8002' 
 
 app = Flask(__name__)
 
@@ -16,8 +16,11 @@ class MobileApp:
         self.notifications = []
         
     def login(self, username, password):
-        response = requests.post(f'{SERVER_URL}/login', 
-                               json={'username': username, 'password': password})
+        # Отправляем пароль в открытом виде (HTTPS обязан быть в продакшене!)
+        response = requests.post(
+            f'{SERVER_URL}/login',
+            json={'username': username, 'password': password}  # Пароль без хэширования
+        )
         if response.status_code == 200:
             self.connected = True
             self.user_token = response.json().get('token')
@@ -32,6 +35,14 @@ class MobileApp:
                                json={'command': command},
                                headers={'Authorization': f'Bearer {self.user_token}'})
         return response.json()
+
+@app.route('/login', methods=['POST'])
+def handle_login():
+    data = request.json
+    if not data or 'username' not in data or 'password' not in data:
+        return jsonify({'error': 'Invalid credentials'}), 400
+    success = app.mobile_app.login(data['username'], data['password'])
+    return jsonify({'success': success})
 
 @app.route('/command', methods=['POST'])
 def handle_command():
