@@ -35,7 +35,6 @@ class EmergencyService(db.Model):
 @app.before_first_request
 def create_tables():
     db.create_all()
-    # Инициализация экстренных служб
     if not EmergencyService.query.first():
         services = [
             {'service_type': 'police', 'contact': '102'},
@@ -52,7 +51,6 @@ def login():
     username = data.get('username')
     password = data.get('password')
 
-    # Это упрощённая имитация. На проде нужна авторизация и хэш.
     if username == 'admin' and password == 'admin':
         return jsonify({'token': 'mock-token'})
     return jsonify({'error': 'Invalid credentials'}), 401
@@ -77,17 +75,27 @@ def register_device():
     
     return jsonify({'status': 'registered', 'device_id': device.id})
 
+@app.route('/devices', methods=['GET'])
+def list_devices():
+    devices = Device.query.all()
+    return jsonify([
+        {
+            'id': d.id,
+            'name': d.name,
+            'type': d.device_type,
+            'status': d.status.value
+        } for d in devices
+    ])
+
 @app.route('/command', methods=['POST'])
 def execute_command():
     device_id = request.json.get('device_id')
     command = request.json.get('command')
     
-    # Логика выполнения команд
     device = Device.query.get(device_id)
     if not device:
         return jsonify({'error': 'Device not found'}), 404
     
-    # Отправка данных на шлюз
     request.post(f'{GATEWAY_URL}/command', 
                 json={'command': f'{device.name}:{command}'})
     
@@ -99,7 +107,7 @@ def handle_emergency():
     service = EmergencyService.query.filter_by(service_type=emergency_type).first()
     
     if service:
-        # Логика вызова службы
+
         requests.post(f'{GATEWAY_URL}/notifications',
                       json={'message': f'Emergency: {emergency_type} called',
                             'priority': 'high'})

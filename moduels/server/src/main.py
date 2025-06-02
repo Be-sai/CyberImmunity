@@ -87,6 +87,28 @@ def handle_exception(e):
         "status": e.code
     }), e.code
 
+@app.route('/command_logs', methods=['GET'])
+def get_command_logs():
+    logs = CommandLog.query.order_by(CommandLog.timestamp.desc()).all()
+    return jsonify([
+        {
+            'command': log.command,
+            'response': log.response,
+            'timestamp': log.timestamp.isoformat()
+        } for log in logs
+    ])
+
+@app.route('/sensor_data', methods=['GET'])
+def get_sensor_data():
+    data = SensorData.query.order_by(SensorData.timestamp.desc()).all()
+    return jsonify([
+        {
+            'sensor_type': d.sensor_type,
+            'value': d.value,
+            'timestamp': d.timestamp.isoformat()
+        } for d in data
+    ])
+
 def start_gateway():
     threading.Thread(target=lambda: app.run(
         host=HOST, port=PORT, debug=True, use_reloader=False
