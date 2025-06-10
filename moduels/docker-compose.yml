@@ -85,23 +85,6 @@ services:
       - security
 
 
-  cloud:
-    build: ./cloud/
-    image: cloud
-    entrypoint:
-      - venv/bin/python
-      - start.py
-    container_name: cloud
-    environment:
-      - MODULE_NAME=customer
-    ports:
-      - 5007:5007
-    networks:
-      - my_network
-    depends_on:
-      - server
-
-
   emergency:
     build: ./emergency/
     image: emergency
