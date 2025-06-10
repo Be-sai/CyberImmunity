@@ -1,12 +1,8 @@
 import os
+from .main import start_web
 
-from .main import start_gateway
-
-
-MODULE_NAME = os.getenv('MODULE_NAME')
-
+MODULE_NAME = os.getenv('MODULE_NAME', 'WebServer')
 
 def main():
-    print(f'[DEBUG] {MODULE_NAME} started...')
-    print(f'Running {MODULE_NAME}_api...')
-    start_gateway()
+    print(f'[INFO] {MODULE_NAME} module starting...')
+    start_web()

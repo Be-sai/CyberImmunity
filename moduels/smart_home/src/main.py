@@ -1,128 +1,153 @@
-from flask import Flask, request, jsonify, requests
-from flask_sqlalchemy import SQLAlchemy
+import os
+import requests
 import threading
-from datetime import datetime
-from enum import Enum
+import time
+from flask import Flask, request, jsonify
 from werkzeug.exceptions import HTTPException
 
 HOST = '0.0.0.0'
-PORT = 8002
-GATEWAY_URL = 'http://gateway:8000'
-DB_FILE = 'sqlite:///smart_home.db'
+PORT = 5005
+MODULE_NAME = os.getenv('MODULE_NAME', 'SmartHomeSystem')
+
+# Сервисные URL
+WEB_SERVER_URL = 'http://web_server:5004'
+SENSORS_URL = 'http://sensors:5010'
+SECURITY_URL = 'http://security:5009'
+SMS_URL = 'http://sms:5006'
+CLOUD_URL = 'http://cloud:5007'
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = DB_FILE
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
 
-class DeviceStatus(Enum):
-    ONLINE = 'online'
-    OFFLINE = 'offline'
-    ERROR = 'error'
+def log_event(event_data):
+    try:
+        requests.post(
+            f'{WEB_SERVER_URL}/log',
+            json=event_data,
+            timeout=1
+        )
+    except requests.exceptions.RequestException:
+        print(f"[ERROR] Logging failed for event: {event_data['event']}")
 
-class Device(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    device_type = db.Column(db.String(50), nullable=False)
-    status = db.Column(db.Enum(DeviceStatus), default=DeviceStatus.ONLINE)
-    last_active = db.Column(db.DateTime)
-
-class EmergencyService(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    service_type = db.Column(db.String(50), nullable=False)
-    contact = db.Column(db.String(100), nullable=False)
-
-@app.before_first_request
-def create_tables():
-    db.create_all()
-    if not EmergencyService.query.first():
-        services = [
-            {'service_type': 'police', 'contact': '102'},
-            {'service_type': 'fire', 'contact': '101'},
-            {'service_type': 'medical', 'contact': '103'}
-        ]
-        for service in services:
-            db.session.add(EmergencyService(**service))
-        db.session.commit()
-
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
-
-    if username == 'admin' and password == 'admin':
-        return jsonify({'token': 'mock-token'})
-    return jsonify({'error': 'Invalid credentials'}), 401
-
-@app.route('/notifications', methods=['GET'])
-def get_notifications():
-    response = request.get(f'{GATEWAY_URL}/notifications')
-    return jsonify(response.json())
-
-@app.route('/devices/register', methods=['POST'])
-def register_device():
-    data = request.json
-    device_name = data.get('device_id')
-    device_type = data.get('type')
-
-    if not device_name or not device_type:
-        return jsonify({'error': 'Missing fields'}), 400
-
-    device = Device(name=device_name, device_type=device_type)
-    db.session.add(device)
-    db.session.commit()
+@app.route('/access', methods=['POST'])
+def grant_access():
+    credentials = request.json
+    username = credentials.get('username', 'unknown')
     
-    return jsonify({'status': 'registered', 'device_id': device.id})
+    # Простая проверка учетных данных
+    if username == 'admin' and credentials.get('password') == 'secret':
+        log_event({
+            "module": MODULE_NAME,
+            "event": "access_granted",
+            "user": username
+        })
+        return jsonify({"status": "Доступ разрешен"}), 200
+    
+    log_event({
+        "module": MODULE_NAME,
+        "event": "access_denied",
+        "user": username
+    })
+    return jsonify({"status": "Доступ запрещен"}), 401
 
-@app.route('/devices', methods=['GET'])
-def list_devices():
-    devices = Device.query.all()
-    return jsonify([
-        {
-            'id': d.id,
-            'name': d.name,
-            'type': d.device_type,
-            'status': d.status.value
-        } for d in devices
-    ])
-
-@app.route('/command', methods=['POST'])
+@app.route('/execute', methods=['POST'])
 def execute_command():
-    device_id = request.json.get('device_id')
-    command = request.json.get('command')
+    command = request.json
+    user = command.get('user', 'unknown')
+    cmd = command.get('command', 'unknown')
     
-    device = Device.query.get(device_id)
-    if not device:
-        return jsonify({'error': 'Device not found'}), 404
+    log_event({
+        "module": MODULE_NAME,
+        "event": "command_executed",
+        "user": user,
+        "command": cmd
+    })
     
-    request.post(f'{GATEWAY_URL}/command', 
-                json={'command': f'{device.name}:{command}'})
+    # Асинхронная отправка уведомления
+    threading.Thread(target=send_notification, args=(
+        f"Выполнена команда: {cmd}",
+        user
+    )).start()
     
-    return jsonify({'status': 'executed'})
+    return jsonify({
+        "status": "Команда выполнена",
+        "command": cmd
+    }), 200
 
 @app.route('/emergency', methods=['POST'])
 def handle_emergency():
-    emergency_type = request.json.get('type')
-    service = EmergencyService.query.filter_by(service_type=emergency_type).first()
+    data = request.json
+    reason = data.get('reason', 'unknown')
     
-    if service:
+    log_event({
+        "module": MODULE_NAME,
+        "event": "emergency_triggered",
+        "reason": reason
+    })
+    
+    try:
+        response = requests.post(
+            f'{CLOUD_URL}/alert',
+            json=data,
+            timeout=3
+        )
+        if response.status_code == 200:
+            send_notification(f"Экстренная ситуация: {reason}", "admin")
+            return jsonify({"status": "Тревога активирована"}), 200
+    except requests.exceptions.RequestException as e:
+        print(f"[ERROR] Cloud service unreachable: {str(e)}")
+    
+    return jsonify({"status": "Ошибка активации тревоги"}), 500
 
-        requests.post(f'{GATEWAY_URL}/notifications',
-                      json={'message': f'Emergency: {emergency_type} called',
-                            'priority': 'high'})
-        return jsonify({'contact': service.contact})
-    
-    return jsonify({'error': 'Service not available'}), 404
+@app.route('/sensors/status', methods=['GET'])
+def get_sensors_data():
+    try:
+        response = requests.get(f'{SENSORS_URL}/status', timeout=2)
+        log_event({
+            "module": MODULE_NAME,
+            "event": "sensor_data_received"
+        })
+        return jsonify(response.json()), 200
+    except requests.exceptions.RequestException as e:
+        return jsonify({
+            "error": "Sensors unavailable",
+            "message": str(e)
+        }), 503
+
+@app.route('/security/check', methods=['GET'])
+def security_check():
+    try:
+        response = requests.get(f'{SECURITY_URL}/check', timeout=2)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify({
+            "error": "Security system unavailable",
+            "message": str(e)
+        }), 503
+
+def send_notification(message, recipient):
+    try:
+        requests.post(
+            f'{SMS_URL}/notify',
+            json={"message": message, "recipient": recipient},
+            timeout=1
+        )
+    except requests.exceptions.RequestException as e:
+        print(f"[ERROR] Notification failed: {str(e)}")
 
 @app.errorhandler(HTTPException)
 def handle_exception(e):
+    log_event({
+        "module": MODULE_NAME,
+        "event": f"error_{e.code}",
+        "message": e.description
+    })
     return jsonify({
-        "error": e.name,
-        "status": e.code
+        "status": e.code,
+        "name": e.name,
+        "message": e.description
     }), e.code
 
-def start_server():
+def start_web():
     threading.Thread(target=lambda: app.run(
         host=HOST, port=PORT, debug=True, use_reloader=False
     )).start()

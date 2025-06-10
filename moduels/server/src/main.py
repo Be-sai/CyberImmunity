@@ -1,115 +1,62 @@
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+import os
 import threading
-from datetime import datetime
+from flask import Flask, request, jsonify
 from werkzeug.exceptions import HTTPException
 
 HOST = '0.0.0.0'
-PORT = 8001
-DB_FILE = 'sqlite:///gateway.db'
+PORT = 5004
+MODULE_NAME = os.getenv('MODULE_NAME', 'WebServer')
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = DB_FILE
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+event_log = []
 
-class CommandLog(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    command = db.Column(db.String(200), nullable=False)
-    response = db.Column(db.String(200))
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-class SensorData(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    sensor_type = db.Column(db.String(50), nullable=False)
-    value = db.Column(db.Float, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-class Notification(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    message = db.Column(db.String(200), nullable=False)
-    priority = db.Column(db.String(20), default='normal')
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-@app.before_first_request
-def create_tables():
-    db.create_all()
-
-@app.route('/notifications', methods=['GET'])
-def list_notifications():
-    notifications = Notification.query.order_by(Notification.timestamp.desc()).all()
-    return jsonify([
-        {
-            'message': n.message,
-            'priority': n.priority,
-            'timestamp': n.timestamp.isoformat()
-        } for n in notifications
-    ])
-
-@app.route('/command', methods=['POST'])
-def handle_command():
-    command = request.json.get('command')
-    if not command:
-        return jsonify({'error': 'Command required'}), 400
-    
-    # Здесь логика обработки команд
-    log = CommandLog(command=command, response='OK')
-    db.session.add(log)
-    db.session.commit()
-    
-    return jsonify({'status': 'success'})
-
-@app.route('/sensor_data', methods=['POST'])
-def receive_sensor_data():
+@app.route('/log', methods=['POST'])
+def log_event():
     data = request.json
-    sensor = SensorData(
-        sensor_type=data.get('type'),
-        value=data.get('value')
-    )
-    db.session.add(sensor)
-    db.session.commit()
-    return jsonify({'status': 'received'})
+    event_log.append(data)
+    print(f"[LOG] {data['module']}: {data['event']}")
+    return jsonify({"status": "logged"}), 200
 
-@app.route('/notifications', methods=['POST'])
-def receive_notification():
-    notification = Notification(
-        message=request.json.get('message'),
-        priority=request.json.get('priority', 'normal')
-    )
-    db.session.add(notification)
-    db.session.commit()
-    return jsonify({'status': 'received'})
+@app.route('/process', methods=['POST'])
+def process_command():
+    command = request.json
+    event_log.append({
+        "type": "command",
+        "command": command.get('command'),
+        "user": command.get('user')
+    })
+    
+    try:
+        # Перенаправление в систему управления
+        import requests
+        response = requests.post(
+            "http://smart_home:5005/execute",
+            json=command,
+            timeout=5
+        )
+        return jsonify(response.json()), response.status_code
+    except Exception as e:
+        return jsonify({
+            "error": "Command processing failed",
+            "message": str(e)
+        }), 500
+
+@app.route('/history', methods=['GET'])
+def get_history():
+    return jsonify({
+        "events": event_log,
+        "count": len(event_log)
+    }), 200
 
 @app.errorhandler(HTTPException)
 def handle_exception(e):
     return jsonify({
-        "error": e.name,
-        "status": e.code
+        "status": e.code,
+        "name": e.name,
+        "message": e.description
     }), e.code
 
-@app.route('/command_logs', methods=['GET'])
-def get_command_logs():
-    logs = CommandLog.query.order_by(CommandLog.timestamp.desc()).all()
-    return jsonify([
-        {
-            'command': log.command,
-            'response': log.response,
-            'timestamp': log.timestamp.isoformat()
-        } for log in logs
-    ])
-
-@app.route('/sensor_data', methods=['GET'])
-def get_sensor_data():
-    data = SensorData.query.order_by(SensorData.timestamp.desc()).all()
-    return jsonify([
-        {
-            'sensor_type': d.sensor_type,
-            'value': d.value,
-            'timestamp': d.timestamp.isoformat()
-        } for d in data
-    ])
-
-def start_gateway():
+def start_web():
     threading.Thread(target=lambda: app.run(
         host=HOST, port=PORT, debug=True, use_reloader=False
     )).start()

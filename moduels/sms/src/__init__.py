@@ -1,7 +1,7 @@
 import os
 from .main import start_web
 
-MODULE_NAME = os.getenv('MODULE_NAME', 'SmartHomeSystem')
+MODULE_NAME = os.getenv('MODULE_NAME', 'NotificationSystem')
 
 def main():
     print(f'[INFO] {MODULE_NAME} module starting...')
