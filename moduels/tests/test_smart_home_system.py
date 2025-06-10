@@ -1,108 +1,84 @@
 import pytest
 import requests
-import time
-from datetime import datetime, timedelta
 
-# Конфигурация тестов
-GATEWAY_URL = 'http://localhost:8001'
-MOBILE_APP_URL = 'http://localhost:8000'
-SMART_HOME_URL = 'http://localhost:8002'
+BASE_URL = "http://localhost:5005"
+SENSORS_URL = "http://localhost:5010"
 
-# Тестовые данные
-TEST_USER = {'username': 'admin', 'password': 'admin'}
-TEST_COMMAND = {'command': 'turn_on_lights'}
-TEST_SENSOR_DATA = {'type': 'temperature', 'value': 22.5}
-TEST_NOTIFICATION = {'message': 'Test notification', 'priority': 'normal'}
-
-@pytest.fixture(scope='module')
-def setup():
-    yield
-
-def test_full_scenario():
-    # 1. Тестирование авторизации через мобильное приложение
-    login_response = requests.post(f'{MOBILE_APP_URL}/login', json=TEST_USER)
-    assert login_response.status_code == 200
-    assert login_response.json().get('success') is True
-    
-    # 2. Тестирование отправки команды
-    command_response = requests.post(
-        f'{MOBILE_APP_URL}/command',
-        json=TEST_COMMAND
-    )
-    assert command_response.status_code == 200
-    assert 'status' in command_response.json()
-    
-    # Проверяем, что команда записана в лог шлюза
-    time.sleep(0.5)
-    logs_response = requests.get(f'{GATEWAY_URL}/command_logs')
-    assert TEST_COMMAND['command'] in [log['command'] for log in logs_response.json()]
-    
-    # 3. Тестирование отправки данных сенсора
-    sensor_response = requests.post(
-        f'{GATEWAY_URL}/sensor_data',
-        json=TEST_SENSOR_DATA
-    )
-    assert sensor_response.status_code == 200
-    
-    # Проверяем, что данные сохранились
-    time.sleep(0.5)
-    sensor_check = requests.get(f'{GATEWAY_URL}/sensor_data')
-    assert any(
-        data['sensor_type'] == TEST_SENSOR_DATA['type'] and 
-        data['value'] == TEST_SENSOR_DATA['value']
-        for data in sensor_check.json()
-    )
-    
-    # 4. Тестирование уведомлений
-    # Отправляем уведомление
-    notification_response = requests.post(
-        f'{GATEWAY_URL}/notifications',
-        json=TEST_NOTIFICATION
-    )
-    assert notification_response.status_code == 200
-    
-    # Проверяем получение уведомления через мобильное приложение
-    time.sleep(0.5)
-    notifications_response = requests.get(f'{MOBILE_APP_URL}/notifications')
-    assert notifications_response.status_code == 200
-    assert any(
-        n['message'] == TEST_NOTIFICATION['message']
-        for n in notifications_response.json()
-    )
-    
-    # 5. Тестирование экстренного вызова
-    emergency_response = requests.post(
-        f'{SMART_HOME_URL}/emergency',
-        json={'type': 'medical'}
-    )
-    assert emergency_response.status_code == 200
-    assert 'contact' in emergency_response.json()
-    
-    # Проверяем, что уведомление о вызове создалось
-    time.sleep(0.5)
-    emergency_notifications = requests.get(f'{GATEWAY_URL}/notifications')
-    assert any(
-        'Emergency: medical called' in n['message'] and 
-        n['priority'] == 'high'
-        for n in emergency_notifications.json()
-    )
-
-def test_device_registration():
-    # Тестирование регистрации устройства
-    device_data = {
-        'device_id': 'test_device_1',
-        'type': 'light_switch'
-    }
+def test_user_authentication():
+    """Тест авторизации пользователя"""
     response = requests.post(
-        f'{SMART_HOME_URL}/devices/register',
-        json=device_data
+        f"{BASE_URL}/access",
+        json={"username": "admin", "password": "secret"}
     )
     assert response.status_code == 200
-    assert 'device_id' in response.json()
-    
-    # Проверяем, что устройство появилось в списке
-    devices_response = requests.get(f'{SMART_HOME_URL}/devices')
-    assert device_data['device_id'] in [d['name'] for d in devices_response.json()]
+    assert response.json()["status"] == "Доступ разрешен"
 
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+def test_sensor_data_retrieval():
+    """Тест получения данных c датчиков"""
+    response = requests.get(f"{BASE_URL}/sensors/status")
+    assert response.status_code == 200
+    data = response.json()
+    assert "fire" in data
+    assert "door" in data
+    assert data["door"]["status"] in ["closed", "open"]
+
+def test_command_execution():
+    """Тест выполнения команды управления"""
+    auth_response = requests.post(
+        f"{BASE_URL}/access",
+        json={"username": "admin", "password": "secret"}
+    )
+    
+    response = requests.post(
+        f"{BASE_URL}/execute",
+        json={"command": "lock_doors", "user": "admin"}
+    )
+    
+    assert response.status_code == 200
+    assert response.json()["status"] == "Команда выполнена"
+    
+    # Проверяем состояние датчика двери
+    sensor_data = requests.get(f"{SENSORS_URL}/door").json()
+    assert sensor_data["door"]["locked"] is True
+
+def test_emergency_handling():
+    """Тест обработки экстренной ситуации"""
+    response = requests.post(
+        f"{BASE_URL}/emergency",
+        json={"type": "fire", "reason": "Обнаружено задымление"}
+    )
+    
+    assert response.status_code == 200
+    result = response.json()
+    assert result["status"] == "Тревога активирована"
+    assert result["service"] == "Пожарная служба"
+    assert "01" in result["code"]
+
+def test_security_check():
+    """Тест проверки системы безопасности"""
+    response = requests.get(f"{BASE_URL}/security/check")
+    assert response.status_code == 200
+    
+    data = response.json()
+    assert "fire" in data
+    assert "gas" in data
+    assert data["fire"] in ["normal", "alert"]
+
+def test_notification_system():
+    """Тест системы уведомлений"""
+    test_message = "Тестовое уведомление"
+    response = requests.post(
+        f"{BASE_URL}/execute",
+        json={"command": "test_notify", "user": "admin"}
+    )
+    
+    assert response.status_code == 200
+
+@pytest.mark.parametrize("sensor_type", ["fire", "gas", "water"])
+def test_critical_sensors(sensor_type):
+    """Параметризованный тест критических датчиков"""
+    response = requests.get(f"{SENSORS_URL}/{sensor_type}")
+    assert response.status_code == 200
+    data = response.json()
+    assert sensor_type in data
+    assert "status" in data[sensor_type]

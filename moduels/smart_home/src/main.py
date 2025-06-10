@@ -14,7 +14,13 @@ WEB_SERVER_URL = 'http://web_server:5004'
 SENSORS_URL = 'http://sensors:5010'
 SECURITY_URL = 'http://security:5009'
 SMS_URL = 'http://sms:5006'
-CLOUD_URL = 'http://cloud:5007'
+
+EMERGENCY_SERVICES = {
+    "fire": {"name": "Пожарная служба", "code": "01"},
+    "police": {"name": "Полиция", "code": "02"},
+    "gas": {"name": "Аварийная газовая", "code": "04"},
+    "medical": {"name": "Скорая помощь", "code": "03"}
+}
 
 app = Flask(__name__)
 
@@ -75,28 +81,30 @@ def execute_command():
 
 @app.route('/emergency', methods=['POST'])
 def handle_emergency():
-    data = request.json
-    reason = data.get('reason', 'unknown')
+    emergency_data = request.json
+    service_type = emergency_data.get('type', 'fire')
+    reason = emergency_data.get('reason', 'Неизвестная причина')
     
     log_event({
         "module": MODULE_NAME,
         "event": "emergency_triggered",
+        "service": service_type,
         "reason": reason
     })
+
+    service = EMERGENCY_SERVICES.get(service_type.lower(), EMERGENCY_SERVICES["fire"])
     
-    try:
-        response = requests.post(
-            f'{CLOUD_URL}/alert',
-            json=data,
-            timeout=3
-        )
-        if response.status_code == 200:
-            send_notification(f"Экстренная ситуация: {reason}", "admin")
-            return jsonify({"status": "Тревога активирована"}), 200
-    except requests.exceptions.RequestException as e:
-        print(f"[ERROR] Cloud service unreachable: {str(e)}")
+    send_notification(
+        f"Вызвана {service['name']} ({service['code']}): {reason}",
+        "admin"
+    )
     
-    return jsonify({"status": "Ошибка активации тревоги"}), 500
+    return jsonify({
+        "status": "Тревога активирована",
+        "service": service['name'],
+        "code": service['code'],
+        "message": f"Причина: {reason}"
+    }), 200
 
 @app.route('/sensors/status', methods=['GET'])
 def get_sensors_data():
