@@ -6,9 +6,10 @@ from werkzeug.exceptions import HTTPException
 HOST = '0.0.0.0'
 PORT = 5008
 MODULE_NAME = os.getenv('MODULE_NAME', 'EmergencyServices')
-WEB_SERVER_URL = "http://web_server:5004"
+WEB_SERVER_URL = "http://server:5004"
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 SERVICES = {
     "fire": "Пожарная служба",

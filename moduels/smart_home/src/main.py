@@ -10,7 +10,7 @@ PORT = 5005
 MODULE_NAME = os.getenv('MODULE_NAME', 'SmartHomeSystem')
 
 # Сервисные URL
-WEB_SERVER_URL = 'http://web_server:5004'
+WEB_SERVER_URL = 'http://server:5004'
 SENSORS_URL = 'http://sensors:5010'
 SECURITY_URL = 'http://security:5009'
 SMS_URL = 'http://sms:5006'
@@ -23,6 +23,7 @@ EMERGENCY_SERVICES = {
 }
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 def log_event(event_data):
     try:

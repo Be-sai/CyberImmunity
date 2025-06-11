@@ -8,6 +8,7 @@ PORT = 5004
 MODULE_NAME = os.getenv('MODULE_NAME', 'WebServer')
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 event_log = []
 
 @app.route('/log', methods=['POST'])

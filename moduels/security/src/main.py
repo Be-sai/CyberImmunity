@@ -10,9 +10,10 @@ PORT = 5009
 MODULE_NAME = os.getenv('MODULE_NAME', 'SecuritySystem')
 SENSORS_URL = "http://sensors:5010"
 SMART_HOME_URL = "http://smart_home:5005"
-WEB_SERVER_URL = "http://web_server:5004"
+WEB_SERVER_URL = "http://server:5004"
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 def log_event(event_data):
     try:
