@@ -30,15 +30,14 @@ def security_check():
         try:
             response = requests.get(f"{SENSORS_URL}/{sensor}", timeout=1)
             sensor_data = response.json()
-            status[sensor] = sensor_data['status']
+            inner_data = sensor_data.get(sensor, {})
+            sensor_status = inner_data.get('status', 'unknown')
             
-            # Случайное срабатывание для демонстрации (5% шанс)
-            if random.random() < 0.05:
-                sensor_data['status'] = "alert"
-                status[sensor] = "alert"
-            
-            if sensor_data['status'] != 'normal':
+            status[sensor] = sensor_status
+
+            if sensor_status != 'normal':
                 alerts.append(sensor)
+
         except requests.exceptions.RequestException:
             status[sensor] = "error"
     
