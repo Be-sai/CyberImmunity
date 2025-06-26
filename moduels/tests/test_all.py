@@ -16,71 +16,85 @@ class SmartHomeTestSuite(unittest.TestCase):
         resp = requests.post(f"{APP}/login", json={"username": "admin", "password": "secret"})
         self.assertEqual(resp.status_code, 200)
         self.assertIn("Доступ разрешен", resp.text)
+        print("test_01_login_success: passed")
 
     def test_02_login_failure(self):
         resp = requests.post(f"{APP}/login", json={"username": "admin", "password": "wrong"})
         self.assertEqual(resp.status_code, 401)
+        print("test_02_login_failure: passed")
 
     def test_03_send_command(self):
         command = {"user": "admin", "command": "turn_on_lights"}
         resp = requests.post(f"{APP}/send_command", json=command)
         self.assertEqual(resp.status_code, 200)
         self.assertIn("Команда выполнена", resp.text)
+        print("test_03_send_command: passed")
 
     def test_04_router_forward_login(self):
         payload = {"username": "admin", "password": "secret"}
         resp = requests.post(f"{ROUTER}/forward/login", json=payload)
         self.assertEqual(resp.status_code, 200)
+        print("test_04_router_forward_login: passed")
 
     def test_05_router_invalid_service(self):
         resp = requests.post(f"{ROUTER}/forward/unknown_service", json={})
         self.assertEqual(resp.status_code, 404)
+        print("test_05_router_invalid_service: passed")
 
     def test_06_sensor_status_all(self):
         resp = requests.get(f"{SENSORS}/status")
         self.assertEqual(resp.status_code, 200)
         self.assertIn("fire", resp.json())
+        print("test_06_sensor_status_all: passed")
 
     def test_07_sensor_individual(self):
         resp = requests.get(f"{SENSORS}/fire")
         self.assertEqual(resp.status_code, 200)
         self.assertIn("fire", resp.json())
+        print("test_07_sensor_individual: passed")
 
     def test_08_security_check(self):
         resp = requests.get(f"{SECURITY}/check")
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.json(), dict)
+        print("test_08_security_check: passed")
 
     def test_09_emergency_call(self):
         payload = {"type": "fire", "reason": "Test emergency"}
         resp = requests.post(f"{EMERGENCY}/call", json=payload)
         self.assertEqual(resp.status_code, 200)
         self.assertIn("Вызов принят", resp.text)
+        print("test_09_emergency_call: passed")
 
     def test_10_sms_notify(self):
         payload = {"message": "Test alert", "recipient": "test_user"}
         resp = requests.post(f"{SMS}/notify", json=payload)
         self.assertEqual(resp.status_code, 200)
+        print("test_10_sms_notify: passed")
 
     def test_11_history_log(self):
         resp = requests.get(f"{WEB_SERVER}/history")
         self.assertEqual(resp.status_code, 200)
         self.assertIn("events", resp.json())
+        print("test_11_history_log: passed")
 
     def test_12_emergency_trigger_via_smart_home(self):
         payload = {"type": "gas", "reason": "Gas leak detected"}
         resp = requests.post(f"{SMART_HOME}/emergency", json=payload)
         self.assertEqual(resp.status_code, 200)
         self.assertIn("Тревога активирована", resp.text)
+        print("test_12_emergency_trigger_via_smart_home: passed")
 
     def test_13_get_sensors_from_smart_home(self):
         resp = requests.get(f"{SMART_HOME}/sensors/status")
         self.assertEqual(resp.status_code, 200)
         self.assertIn("gas", resp.text)
+        print("test_13_get_sensors_from_smart_home: passed")
 
     def test_14_check_security_from_smart_home(self):
         resp = requests.get(f"{SMART_HOME}/security/check")
         self.assertEqual(resp.status_code, 200)
+        print("test_14_check_security_from_smart_home: passed")
 
 if __name__ == '__main__':
     unittest.main()

@@ -10,13 +10,14 @@ MODULE_NAME = os.getenv('MODULE_NAME', 'Router')
 
 ROUTING_TABLE = {
     "login": "http://smart_home:5005/access",
-    "command": "http://web_server:5004/process",
+    "command": "http://server:5004/process",
     "notification": "http://app:5001/notify",
-    "log": "http://web_server:5004/log",
+    "log": "http://server:5004/log",
     "sensors": "http://sensors:5010/status"
 }
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 @app.route('/forward/<service>', methods=['POST'])
 def forward_request(service):

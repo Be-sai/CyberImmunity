@@ -10,6 +10,7 @@ PORT = 5010
 MODULE_NAME = os.getenv('MODULE_NAME', 'SensorsController')
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 # Состояние датчиков
 sensors = {

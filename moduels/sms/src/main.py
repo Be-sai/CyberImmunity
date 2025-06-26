@@ -9,6 +9,7 @@ MODULE_NAME = os.getenv('MODULE_NAME', 'NotificationSystem')
 ROUTER_URL = "http://router:5003"
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 @app.route('/notify', methods=['POST'])
 def notify():
