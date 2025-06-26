@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+
+  server:
+    build: ./server/
+    image: server
+    entrypoint:
+      - venv/bin/python
+      - start.py
+    container_name: server
+    environment:
+      - MODULE_NAME=customer
+    ports:
+      - 5004:5004
+    networks:
+      - my_network
+
+
+  router:
+    build: ./router/
+    image: router
+    entrypoint: 
+      - venv/bin/python
+      - start.py
+    container_name: router
+    environment:
+      - MODULE_NAME=router
+    ports:
+      - 5003:5003
+    networks:
+      - my_network
+    depends_on:
+      - smart_home
+
+
+  app:
+    build: ./app/
+    image: app
+    entrypoint: 
+      - venv/bin/python
+      - start.py
+    container_name: app
+    environment:
+      - MODULE_NAME=app
+    ports:
+      - 5001:5001
+    networks:
+      - my_network
+    depends_on:
+      - router
+
+
+  smart_home:
+    build: ./smart_home/
+    image: smart_home
+    entrypoint:
+      - venv/bin/python
+      - start.py
+    container_name: smart_home
+    environment:
+      - MODULE_NAME=customer
+    ports:
+      - 5005:5005
+    networks:
+      - my_network
+    depends_on:
+      - sms
+
+
+  sms:
+    build: ./sms/
+    image: sms
+    entrypoint:
+      - venv/bin/python
+      - start.py
+    container_name: sms
+    environment:
+      - MODULE_NAME=customer
+    ports:
+      - 5006:5006
+    networks:
+      - my_network
+    depends_on:
+      - security
+
+
+  emergency:
+    build: ./emergency/
+    image: emergency
+    entrypoint:
+      - venv/bin/python
+      - start.py
+    container_name: emergency
+    environment:
+      - MODULE_NAME=customer
+    ports:
+      - 5008:5008
+    networks:
+      - my_network
+    depends_on:
+      - server
+      - sensors
+
+
+  security:
+    build: ./security/
+    image: security
+    entrypoint:
+      - venv/bin/python
+      - start.py
+    container_name: security
+    environment:
+      - MODULE_NAME=customer
+    ports:
+      - 5009:5009
+    networks:
+      - my_network
+    depends_on:
+      - emergency
+
+
+  sensors:
+    build: ./sensors/
+    image: sensors
+    entrypoint:
+      - venv/bin/python
+      - start.py
+    container_name: sensors
+    environment:
+      - MODULE_NAME=customer
+    ports:
+      - 5010:5010
+    networks:
+      - my_network
+    depends_on:
+      - server
+
+
+networks:
+  my_network:
+    driver: bridge
