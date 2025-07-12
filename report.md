@@ -164,6 +164,8 @@ HC-15 ![image_2025-05-15_10-58-14](https://github.com/user-attachments/assets/59
 
 
 ## Переработанная архитектура
-![Умный доммммммммммм-Страница — 2 drawio](https://github.com/user-attachments/assets/ecb9917a-39f7-464c-9730-861ff291b7e3)
+!<img width="869" height="699" alt="image" src="https://github.com/user-attachments/assets/a8540e3c-0789-40c3-96f9-5a6fc6bc14e5" />
+
+
 
 ![image](https://github.com/user-attachments/assets/11d22e64-23c3-4a44-8b26-02a0f72a9bb1)
